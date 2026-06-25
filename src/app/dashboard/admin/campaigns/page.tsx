@@ -4,7 +4,7 @@ import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatDate, calculateProgress } from "@/lib/utils";
 import { CampaignStatusBadge } from "@/components/ui/Badge";
-import { deleteCampaign, updateCampaignStatus } from "./actions";
+import { deleteCampaignAction, toggleCampaignStatusAction } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -20,18 +20,6 @@ export default async function AdminCampaignsPage() {
     .from("campaigns")
     .select("id, title, slug, status, collected_amount, target_amount, donor_count, deadline, created_at, categories(name)")
     .order("created_at", { ascending: false });
-
-  async function handleDelete(formData: FormData) {
-    "use server";
-    await deleteCampaign(formData.get("id") as string);
-  }
-
-  async function handleToggleStatus(formData: FormData) {
-    "use server";
-    const currentStatus = formData.get("status") as string;
-    const newStatus = currentStatus === "active" ? "draft" : "active";
-    await updateCampaignStatus(formData.get("id") as string, newStatus);
-  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -97,7 +85,7 @@ export default async function AdminCampaignsPage() {
                       <td className="px-5 py-4 text-slate-600">{formatDate(c.deadline as string, "d MMM yyyy")}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-1 justify-end">
-                          <form action={handleToggleStatus}>
+                          <form action={toggleCampaignStatusAction}>
                             <input type="hidden" name="id" value={c.id as string} />
                             <input type="hidden" name="status" value={c.status as string} />
                             <button
@@ -115,7 +103,7 @@ export default async function AdminCampaignsPage() {
                           >
                             <Pencil size={16} />
                           </Link>
-                          <form action={handleDelete}>
+                          <form action={deleteCampaignAction}>
                             <input type="hidden" name="id" value={c.id as string} />
                             <button
                               type="submit"

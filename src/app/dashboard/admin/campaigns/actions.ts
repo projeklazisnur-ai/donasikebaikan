@@ -72,3 +72,13 @@ export async function updateCampaignStatus(id: string, status: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard/admin/campaigns");
 }
+
+export async function deleteCampaignAction(formData: FormData) {
+  await deleteCampaign(formData.get("id") as string);
+}
+
+export async function toggleCampaignStatusAction(formData: FormData) {
+  const currentStatus = formData.get("status") as string;
+  const newStatus = currentStatus === "active" ? "draft" : "active";
+  await updateCampaignStatus(formData.get("id") as string, newStatus);
+}
