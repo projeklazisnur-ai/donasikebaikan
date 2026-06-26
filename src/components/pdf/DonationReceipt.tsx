@@ -221,7 +221,11 @@ export default function DonationReceipt({
         {/* ── HEADER ── */}
         <View style={s.header}>
           {/* Left: Logo + address */}
-          <Image src={logoPath} style={s.logo} />
+          {logoPath ? (
+            <Image src={logoPath} style={s.logo} />
+          ) : (
+            <Text style={{ fontSize: 16, fontFamily: "Helvetica-Bold", color: G, marginRight: 10, width: 80 }}>LAZISNUR</Text>
+          )}
           <View style={s.orgBlock}>
             <Text style={s.orgTagline}>Mencerdaskan memberdayakan</Text>
             <Text style={s.orgAddress}>
@@ -309,7 +313,7 @@ export default function DonationReceipt({
               </View>
               <View style={s.sigBox}>
                 <Text style={s.sigLabel}>Diterima Oleh</Text>
-                <Image src={logoPath} style={s.sigOrgLogo} />
+                {logoPath && <Image src={logoPath} style={s.sigOrgLogo} />}
                 <Text style={s.sigName}>LAZISNUR</Text>
               </View>
             </View>

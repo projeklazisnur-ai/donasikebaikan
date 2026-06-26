@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import { createElement, type ReactElement } from "react";
 import { createClient } from "@/lib/supabase/server";
@@ -122,6 +123,16 @@ export async function GET(
   const categorySlug = campaign?.categories?.slug ?? "";
   const donorName = donation.is_anonymous ? "Hamba Allah" : (donation.donor_name ?? "");
 
+  // Logo sebagai data URL agar reliable di serverless (Vercel)
+  let logoDataUrl = "";
+  try {
+    const logoPath = path.join(process.cwd(), "public", "logo.png");
+    const logoBuffer = fs.readFileSync(logoPath);
+    logoDataUrl = `data:image/png;base64,${logoBuffer.toString("base64")}`;
+  } catch {
+    // logo tidak ditemukan — PDF tetap dibuat tanpa logo
+  }
+
   const props: DonationReceiptProps = {
     donorName,
     donorPhone: (donation.donor_phone as string | null) ?? "",
@@ -131,22 +142,29 @@ export async function GET(
     date: formatDateId(donation.created_at as string),
     receiptNumber: receiptNumber(donation.created_at as string, donation.id as string),
     donorId: (donation.id as string).slice(0, 8).toUpperCase(),
-    paymentType: donation.payment_method === "transfer_manual" ? "bank" : "bank",
+    paymentType: "bank",
     bankInfo,
     jenisdonasi: jenisdonasiFromCategory(categorySlug),
     terbilang: terbilang(donation.amount as number),
-    logoPath: path.join(process.cwd(), "public", "logo.png"),
+    logoPath: logoDataUrl,
   };
 
-  const component = createElement(DonationReceipt, props);
-  const buffer = await renderToBuffer(component as ReactElement<DocumentProps>);
+  let buffer: Buffer;
+  try {
+    const component = createElement(DonationReceipt, props);
+    buffer = await renderToBuffer(component as ReactElement<DocumentProps>);
+  } catch (err) {
+    console.error("[certificate] PDF generation error:", err);
+    return NextResponse.json({ error: "Gagal membuat PDF bukti donasi" }, { status: 500 });
+  }
+
   const filename = `bukti-donasi-${(donation.id as string).slice(0, 8)}.pdf`;
 
   return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,
-      "Cache-Control": "private, max-age=3600",
+      "Cache-Control": "no-store",
     },
   });
 }
