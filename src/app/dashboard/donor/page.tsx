@@ -107,7 +107,7 @@ export default async function DonorDashboardPage() {
       {/* Quick links */}
       <div className="grid sm:grid-cols-3 gap-4">
         {[
-          { href: "/dashboard/donor/certificates", label: "Download Sertifikat", icon: Award, desc: "Sertifikat donasi Anda" },
+          { href: "/dashboard/donor/certificates", label: "Download Bukti Donasi", icon: Award, desc: "Bukti setor donasi Anda" },
           { href: "/dashboard/donor/proposals/new", label: "Usulkan Penerima", icon: Heart, desc: "Usulkan orang yang perlu bantuan" },
           { href: "/dashboard/donor/profile", label: "Edit Profil", icon: History, desc: "Perbarui data diri Anda" },
         ].map((l) => (

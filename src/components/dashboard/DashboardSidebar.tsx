@@ -64,7 +64,7 @@ const navByRole: Record<string, NavItem[]> = {
   donor: [
     { href: "/dashboard/donor", label: "Ikhtisar", icon: <LayoutDashboard size={18} /> },
     { href: "/dashboard/donor/history", label: "Riwayat Donasi", icon: <History size={18} /> },
-    { href: "/dashboard/donor/certificates", label: "Sertifikat", icon: <Award size={18} /> },
+    { href: "/dashboard/donor/certificates", label: "Bukti Donasi", icon: <Award size={18} /> },
     { href: "/dashboard/donor/recurring", label: "Donasi Rutin", icon: <RefreshCw size={18} /> },
     { href: "/dashboard/donor/proposals", label: "Usulan PM", icon: <FileText size={18} /> },
     { href: "/dashboard/donor/profile", label: "Profil", icon: <UserCircle size={18} /> },

@@ -23,15 +23,15 @@ export default async function DonorCertificatesPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-slate-900">Sertifikat Donasi</h1>
-        <p className="text-slate-500 text-sm mt-0.5">Download sertifikat untuk setiap donasi yang berhasil</p>
+        <h1 className="text-2xl font-bold text-slate-900">Bukti Donasi</h1>
+        <p className="text-slate-500 text-sm mt-0.5">Download bukti donasi untuk setiap donasi yang berhasil</p>
       </div>
 
       {!donations?.length ? (
         <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
           <Award className="w-12 h-12 text-slate-200 mx-auto mb-3" />
           <p className="text-slate-400 text-sm">Belum ada donasi yang berhasil</p>
-          <p className="text-slate-400 text-xs mt-1">Sertifikat tersedia setelah donasi dikonfirmasi</p>
+          <p className="text-slate-400 text-xs mt-1">Bukti donasi tersedia setelah donasi dikonfirmasi</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-4">
@@ -63,9 +63,9 @@ export default async function DonorCertificatesPage() {
       )}
 
       <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-        <p className="text-sm text-blue-700 font-medium">Informasi Sertifikat Zakat</p>
+        <p className="text-sm text-blue-700 font-medium">Informasi Bukti Donasi Zakat</p>
         <p className="text-xs text-blue-600 mt-1">
-          Untuk donasi zakat, sertifikat khusus zakat tersedia secara otomatis. Hubungi admin jika membutuhkan surat keterangan tambahan.
+          Untuk donasi zakat, bukti setor donasi tersedia secara otomatis setelah diverifikasi. Hubungi admin jika membutuhkan surat keterangan tambahan.
         </p>
       </div>
     </div>
