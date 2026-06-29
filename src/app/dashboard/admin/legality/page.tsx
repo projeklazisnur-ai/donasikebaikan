@@ -3,6 +3,7 @@ import { FileCheck, ExternalLink, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
+import { ConfirmActionButton } from "@/components/ui/ConfirmActionButton";
 import { addLegalityDoc, deleteLegalityDoc } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -100,17 +101,15 @@ export default async function AdminLegalityPage() {
                   >
                     <ExternalLink size={15} />
                   </a>
-                  <form action={deleteLegalityDoc}>
-                    <input type="hidden" name="id" value={doc.id as string} />
-                    <button
-                      type="submit"
-                      title="Hapus"
-                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      onClick={(e) => { if (!confirm("Hapus dokumen ini?")) e.preventDefault(); }}
-                    >
-                      <Trash2 size={15} />
-                    </button>
-                  </form>
+                  <ConfirmActionButton
+                    action={deleteLegalityDoc}
+                    fields={{ id: doc.id as string }}
+                    message="Hapus dokumen ini?"
+                    title="Hapus"
+                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  >
+                    <Trash2 size={15} />
+                  </ConfirmActionButton>
                 </div>
               </div>
             ))}

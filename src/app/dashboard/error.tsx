@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { AlertCircle } from "lucide-react";
 
 export default function DashboardError({
   error,
@@ -14,28 +15,18 @@ export default function DashboardError({
   }, [error]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-8">
-      <div className="max-w-xl w-full bg-red-50 border border-red-200 rounded-2xl p-6">
-        <h2 className="font-bold text-red-700 text-lg mb-3">Server Error — Detail Debug</h2>
-        <div className="space-y-2 text-sm">
-          <div>
-            <p className="font-semibold text-red-600">Message:</p>
-            <pre className="bg-red-100 rounded p-2 text-xs text-red-800 whitespace-pre-wrap mt-1">{error.message}</pre>
-          </div>
-          {error.digest && (
-            <div>
-              <p className="font-semibold text-red-600">Digest:</p>
-              <pre className="bg-red-100 rounded p-2 text-xs text-red-800 mt-1">{error.digest}</pre>
-            </div>
-          )}
-          <div>
-            <p className="font-semibold text-red-600">Stack:</p>
-            <pre className="bg-red-100 rounded p-2 text-xs text-red-800 whitespace-pre-wrap mt-1 max-h-48 overflow-auto">{error.stack}</pre>
-          </div>
+    <div className="min-h-[60vh] flex items-center justify-center p-8">
+      <div className="max-w-md w-full text-center">
+        <div className="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <AlertCircle className="w-7 h-7 text-red-600" />
         </div>
+        <h2 className="font-bold text-slate-900 text-xl mb-2">Terjadi Kesalahan</h2>
+        <p className="text-slate-500 text-sm mb-6">
+          Halaman ini tidak dapat dimuat. Coba muat ulang atau kembali ke halaman sebelumnya.
+        </p>
         <button
           onClick={reset}
-          className="mt-4 bg-red-600 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-red-700"
+          className="bg-primary-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-700 transition-colors"
         >
           Coba Lagi
         </button>

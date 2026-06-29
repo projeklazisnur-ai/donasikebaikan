@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatDate } from "@/lib/utils";
+import { ConfirmActionButton } from "@/components/ui/ConfirmActionButton";
 import { cancelRecurring } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -62,16 +63,14 @@ export default async function DonorRecurringPage() {
                   <p className="text-sm text-primary-600 font-bold">{formatRupiah(d.amount as number)} / bulan</p>
                   <p className="text-xs text-slate-400 mt-0.5">Dimulai {formatDate(d.created_at as string)}</p>
                 </div>
-                <form action={handleCancel}>
-                  <input type="hidden" name="id" value={d.id as string} />
-                  <button
-                    type="submit"
-                    onClick={(e) => { if (!confirm("Batalkan donasi rutin ini?")) e.preventDefault(); }}
-                    className="px-3 py-1.5 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
-                  >
-                    Batalkan
-                  </button>
-                </form>
+                <ConfirmActionButton
+                  action={handleCancel}
+                  fields={{ id: d.id as string }}
+                  message="Batalkan donasi rutin ini?"
+                  className="px-3 py-1.5 text-sm font-semibold text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition-colors"
+                >
+                  Batalkan
+                </ConfirmActionButton>
               </div>
             );
           })}

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Tag, ToggleLeft, ToggleRight, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/Badge";
+import { ConfirmActionButton } from "@/components/ui/ConfirmActionButton";
 import { createCategory, toggleCategoryActive, deleteCategory } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -127,17 +128,15 @@ export default async function AdminCategoriesPage() {
                           {cat.is_active ? <ToggleRight size={18} /> : <ToggleLeft size={18} />}
                         </button>
                       </form>
-                      <form action={handleDelete}>
-                        <input type="hidden" name="id" value={cat.id as string} />
-                        <button
-                          type="submit"
-                          title="Hapus"
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                          onClick={(e) => { if (!confirm("Hapus kategori ini?")) e.preventDefault(); }}
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </form>
+                      <ConfirmActionButton
+                        action={handleDelete}
+                        fields={{ id: cat.id as string }}
+                        message="Hapus kategori ini?"
+                        title="Hapus"
+                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 size={15} />
+                      </ConfirmActionButton>
                     </div>
                   </td>
                 </tr>

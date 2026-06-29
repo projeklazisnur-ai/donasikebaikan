@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckCircle, XCircle, BadgeCheck, Link2, Trash2, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatDate } from "@/lib/utils";
+import { ConfirmActionButton } from "@/components/ui/ConfirmActionButton";
 import { Badge } from "@/components/ui/Badge";
 import { approveAffiliate, assignAffiliateToCampaign, removeAffiliateCampaign } from "./actions";
 
@@ -266,17 +267,15 @@ export default async function AdminAffiliatesPage() {
                         </td>
                         <td className="px-5 py-3.5 text-slate-500 text-xs">{formatDate(ac.created_at as string, "d MMM yyyy")}</td>
                         <td className="px-5 py-3.5">
-                          <form action={handleRemoveAssignment}>
-                            <input type="hidden" name="id" value={ac.id as string} />
-                            <button
-                              type="submit"
-                              title="Hapus assignment"
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              onClick={(e) => { if (!confirm("Hapus assignment ini? Kode referral akan nonaktif.")) e.preventDefault(); }}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </form>
+                          <ConfirmActionButton
+                            action={handleRemoveAssignment}
+                            fields={{ id: ac.id as string }}
+                            message="Hapus assignment ini? Kode referral akan nonaktif."
+                            title="Hapus assignment"
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 size={14} />
+                          </ConfirmActionButton>
                         </td>
                       </tr>
                     );

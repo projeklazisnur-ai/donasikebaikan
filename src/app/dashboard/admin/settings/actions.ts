@@ -9,44 +9,27 @@ export async function saveSiteSettings(formData: FormData) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Unauthorized" };
 
-  const heroHeadline = formData.get("hero_headline") as string;
-  const heroSubtitle = formData.get("hero_subtitle") as string;
-  const heroBannerFile = formData.get("hero_banner_file") as File | null;
+  const updates: { key: string; value: string }[] = [];
 
-  let bannerUrl: string | null = null;
+  const fields: Record<string, string> = {
+    hero_headline: formData.get("hero_headline") as string ?? "",
+    hero_subtitle: formData.get("hero_subtitle") as string ?? "",
+  };
 
-  // Upload banner jika ada file baru
-  if (heroBannerFile && heroBannerFile.size > 0) {
-    const ext = heroBannerFile.name.split(".").pop();
-    const fileName = `hero-banner-${Date.now()}.${ext}`;
-
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("site-assets")
-      .upload(fileName, heroBannerFile, { upsert: true, contentType: heroBannerFile.type });
-
-    if (uploadError) return { error: `Upload gagal: ${uploadError.message}` };
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("site-assets")
-      .getPublicUrl(uploadData.path);
-
-    bannerUrl = publicUrl;
+  for (const [key, value] of Object.entries(fields)) {
+    updates.push({ key, value });
   }
 
-  // Simpan semua settings
-  const updates: { key: string; value: string }[] = [
-    { key: "hero_headline", value: heroHeadline },
-    { key: "hero_subtitle", value: heroSubtitle },
-  ];
-
-  if (bannerUrl) {
-    updates.push({ key: "hero_banner_url", value: bannerUrl });
+  const optionalStringFields = ["hero_banner_url", "hero_banner_mobile_url", "qris_image_url", "bank_accounts"];
+  for (const key of optionalStringFields) {
+    const value = formData.get(key) as string | null;
+    if (value !== null) updates.push({ key, value });
   }
 
   for (const { key, value } of updates) {
     const { error } = await supabase
       .from("site_settings")
-      .upsert({ key, value, updated_at: new Date().toISOString() });
+      .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: "key" });
 
     if (error) return { error: `Gagal simpan ${key}: ${error.message}` };
   }

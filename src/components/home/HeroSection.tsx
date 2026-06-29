@@ -16,11 +16,12 @@ interface HeroStats {
 interface HeroSectionProps {
   stats: HeroStats;
   bannerUrl?: string;
+  bannerMobileUrl?: string;
   headline?: string;
   subtitle?: string;
 }
 
-export default function HeroSection({ stats, bannerUrl = "/banner-donasi.png", headline = "Satu Sedekah, Seribu Doa", subtitle = "Zakat & Sedekah tersalur transparan — setiap donasi tercatat, setiap dampak terbukti" }: HeroSectionProps) {
+export default function HeroSection({ stats, bannerUrl = "/banner-donasi.png", bannerMobileUrl, headline = "Satu Sedekah, Seribu Doa", subtitle = "Zakat & Sedekah tersalur transparan — setiap donasi tercatat, setiap dampak terbukti" }: HeroSectionProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
 
@@ -31,15 +32,26 @@ export default function HeroSection({ stats, bannerUrl = "/banner-donasi.png", h
 
   return (
     <section className="relative min-h-[100svh] sm:min-h-[90vh] flex flex-col overflow-hidden">
-      {/* Background image */}
+      {/* Background image — Desktop */}
       <Image
         src={bannerUrl}
         alt="Banner DonasiKebaikan"
         fill
         priority
-        className="object-cover object-center"
+        className={`object-cover object-center ${bannerMobileUrl ? "hidden md:block" : "block"}`}
         sizes="100vw"
       />
+      {/* Background image — Mobile (hanya tampil jika ada banner mobile) */}
+      {bannerMobileUrl && (
+        <Image
+          src={bannerMobileUrl}
+          alt="Banner DonasiKebaikan Mobile"
+          fill
+          priority
+          className="object-cover object-top md:hidden"
+          sizes="100vw"
+        />
+      )}
 
       {/* Dark gradient overlay — bottom-heavy so image shows at top */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/20" />

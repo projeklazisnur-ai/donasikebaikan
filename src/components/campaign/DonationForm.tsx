@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod/v4";
-import { Heart, CreditCard, Building2 } from "lucide-react";
+import { Heart, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { formatRupiah } from "@/lib/utils";
@@ -18,7 +18,6 @@ const schema = z.object({
   donor_phone: z.string().optional(),
   message: z.string().max(300, "Maksimal 300 karakter").optional(),
   is_anonymous: z.boolean().optional(),
-  payment_method: z.enum(["midtrans", "transfer_manual"]),
 });
 
 type DonationFormValues = z.infer<typeof schema>;
@@ -33,13 +32,12 @@ export default function DonationForm({ campaignId, campaignTitle }: DonationForm
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<DonationFormValues>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<DonationFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { is_anonymous: false, payment_method: "midtrans" as const },
+    defaultValues: { is_anonymous: false },
   });
-
-  const paymentMethod = watch("payment_method");
 
   const handleQuickAmount = (amount: number) => {
     setSelectedAmount(amount);
@@ -56,33 +54,32 @@ export default function DonationForm({ campaignId, campaignTitle }: DonationForm
 
   const onSubmit = async (data: DonationFormValues) => {
     setIsSubmitting(true);
+    setFormError("");
+
     try {
       const res = await fetch("/api/donations/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, campaign_id: campaignId, is_anonymous: isAnonymous }),
+        body: JSON.stringify({
+          ...data,
+          campaign_id: campaignId,
+          is_anonymous: isAnonymous,
+          payment_method: "transfer_manual",
+        }),
       });
 
       const json = await res.json();
 
-      if (!res.ok) throw new Error(json.error ?? "Terjadi kesalahan");
+      if (!res.ok) {
+        setFormError(json.error ?? "Terjadi kesalahan. Coba lagi.");
+        return;
+      }
 
-      if (json.snap_token) {
-        type SnapWindow = { snap?: { pay: (token: string, options: object) => void } };
-        const win = window as unknown as SnapWindow;
-        if (typeof window !== "undefined" && win.snap) {
-          win.snap.pay(json.snap_token, {
-            onSuccess: () => { window.location.href = `/donation/success/${json.donation_id}`; },
-            onPending: () => { window.location.href = `/donation/pending/${json.donation_id}`; },
-            onError: () => { window.location.href = `/donation/failed/${json.donation_id}`; },
-            onClose: () => {},
-          });
-        }
-      } else if (json.donation_id) {
+      if (json.donation_id) {
         window.location.href = `/donation/pending/${json.donation_id}`;
       }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Terjadi kesalahan. Coba lagi.");
+    } catch {
+      setFormError("Gagal terhubung ke server. Periksa koneksi dan coba lagi.");
     } finally {
       setIsSubmitting(false);
     }
@@ -94,6 +91,13 @@ export default function DonationForm({ campaignId, campaignTitle }: DonationForm
         <Heart className="w-5 h-5 text-primary-600 fill-primary-600" />
         Donasi Sekarang
       </h3>
+
+      {formError && (
+        <div className="mb-4 flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-xl">
+          <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{formError}</p>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Quick Amount */}
@@ -182,35 +186,12 @@ export default function DonationForm({ campaignId, campaignTitle }: DonationForm
           {errors.message && <p className="text-xs text-red-500 mt-1">{errors.message.message}</p>}
         </div>
 
-        {/* Payment Method */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">Metode Pembayaran</label>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setValue("payment_method", "midtrans")}
-              className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-                paymentMethod === "midtrans"
-                  ? "bg-primary-50 border-primary-500 text-primary-700"
-                  : "border-slate-200 text-slate-600 hover:border-primary-300"
-              }`}
-            >
-              <CreditCard className="w-4 h-4" />
-              Transfer / QRIS
-            </button>
-            <button
-              type="button"
-              onClick={() => setValue("payment_method", "transfer_manual")}
-              className={`flex items-center gap-2 p-3 rounded-xl border text-sm font-medium transition-colors ${
-                paymentMethod === "transfer_manual"
-                  ? "bg-primary-50 border-primary-500 text-primary-700"
-                  : "border-slate-200 text-slate-600 hover:border-primary-300"
-              }`}
-            >
-              <Building2 className="w-4 h-4" />
-              Transfer Manual
-            </button>
-          </div>
+        {/* Info pembayaran */}
+        <div className="bg-slate-50 rounded-xl p-3 text-xs text-slate-500 space-y-1">
+          <p className="font-medium text-slate-700">Cara pembayaran:</p>
+          <p>1. Klik Donasi → isi data → lihat nomor rekening & QRIS</p>
+          <p>2. Transfer sesuai nominal, lalu upload bukti</p>
+          <p>3. Tim kami verifikasi dalam 1×24 jam</p>
         </div>
 
         <Button
@@ -225,7 +206,7 @@ export default function DonationForm({ campaignId, campaignTitle }: DonationForm
         </Button>
 
         <p className="text-xs text-center text-slate-400">
-          Pembayaran aman & terverifikasi · Dana 100% untuk {campaignTitle}
+          Dana 100% tersalurkan untuk {campaignTitle}
         </p>
       </form>
     </div>

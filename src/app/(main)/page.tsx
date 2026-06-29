@@ -113,6 +113,7 @@ export default async function HomePage({
       <HeroSection
         stats={heroStats}
         bannerUrl={siteSettings.hero_banner_url ?? "/banner-donasi.png"}
+        bannerMobileUrl={siteSettings.hero_banner_mobile_url}
         headline={siteSettings.hero_headline ?? "Satu Sedekah, Seribu Doa"}
         subtitle={siteSettings.hero_subtitle ?? "Zakat & Sedekah tersalur transparan — setiap donasi tercatat, setiap dampak terbukti"}
       />

@@ -1,19 +1,23 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from "lucide-react";
+import { Plus, Pencil, ToggleLeft, ToggleRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatRupiah, formatDate, calculateProgress } from "@/lib/utils";
 import { CampaignStatusBadge } from "@/components/ui/Badge";
-import { deleteCampaignAction, toggleCampaignStatusAction } from "./actions";
+import { toggleCampaignStatusAction } from "./actions";
+import { DeleteCampaignButton } from "./DeleteCampaignButton";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminCampaignsPage() {
+  try {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw new Error(`Auth error: ${authError.message}`);
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const { data: profile, error: profileError } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  if (profileError) throw new Error(`Profile error: ${profileError.message} (${profileError.code})`);
   if (profile?.role !== "admin") redirect("/dashboard");
 
   const { data: campaigns, error: campaignError } = await supabase
@@ -24,16 +28,13 @@ export default async function AdminCampaignsPage() {
   if (campaignError) {
     return (
       <div className="max-w-xl mx-auto mt-10 p-6 bg-red-50 border border-red-200 rounded-2xl">
-        <h2 className="font-bold text-red-700 mb-2">DB Error</h2>
-        <pre className="text-xs text-red-600 whitespace-pre-wrap">{JSON.stringify(campaignError, null, 2)}</pre>
+        <h2 className="font-bold text-red-700 mb-2">Error memuat campaign</h2>
+        <pre className="text-xs text-red-600 whitespace-pre-wrap">{campaignError.message} (code: {campaignError.code})</pre>
       </div>
     );
   }
 
-  // Debug: log data shape
-  console.log("[campaigns] count:", campaigns?.length, "first:", JSON.stringify(campaigns?.[0])?.slice(0, 200));
-
-  try { return (
+  return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
@@ -90,11 +91,11 @@ export default async function AdminCampaignsPage() {
                         <CampaignStatusBadge status={c.status as string} />
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <p className="font-medium text-slate-900">{formatRupiah(c.collected_amount as number, true)}</p>
-                        <p className="text-xs text-slate-400">dari {formatRupiah(c.target_amount as number, true)}</p>
+                        <p className="font-medium text-slate-900">{formatRupiah((c.collected_amount as number) ?? 0, true)}</p>
+                        <p className="text-xs text-slate-400">dari {formatRupiah((c.target_amount as number) ?? 0, true)}</p>
                       </td>
-                      <td className="px-5 py-4 text-right text-slate-700">{c.donor_count as number}</td>
-                      <td className="px-5 py-4 text-slate-600">{formatDate(c.deadline as string, "d MMM yyyy")}</td>
+                      <td className="px-5 py-4 text-right text-slate-700">{(c.donor_count as number) ?? 0}</td>
+                      <td className="px-5 py-4 text-slate-600">{c.deadline ? formatDate(c.deadline as string, "d MMM yyyy") : "—"}</td>
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-1 justify-end">
                           <form action={toggleCampaignStatusAction}>
@@ -115,17 +116,7 @@ export default async function AdminCampaignsPage() {
                           >
                             <Pencil size={16} />
                           </Link>
-                          <form action={deleteCampaignAction}>
-                            <input type="hidden" name="id" value={c.id as string} />
-                            <button
-                              type="submit"
-                              title="Hapus"
-                              className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              onClick={(e) => { if (!confirm("Hapus campaign ini?")) e.preventDefault(); }}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </form>
+                          <DeleteCampaignButton id={c.id as string} />
                         </div>
                       </td>
                     </tr>
@@ -137,12 +128,12 @@ export default async function AdminCampaignsPage() {
         )}
       </div>
     </div>
-  ); } catch (renderErr) {
-    const msg = renderErr instanceof Error ? `${renderErr.message}\n${renderErr.stack}` : String(renderErr);
-    console.error("[campaigns] Render error:", msg);
+  );
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     return (
       <div className="max-w-xl mx-auto mt-10 p-6 bg-orange-50 border border-orange-200 rounded-2xl">
-        <h2 className="font-bold text-orange-700 mb-2">Render Error</h2>
+        <h2 className="font-bold text-orange-700 mb-2">Detail Error</h2>
         <pre className="text-xs text-orange-800 whitespace-pre-wrap">{msg}</pre>
       </div>
     );
